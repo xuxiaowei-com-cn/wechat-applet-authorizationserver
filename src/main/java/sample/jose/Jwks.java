@@ -41,12 +41,7 @@ public final class Jwks {
 		KeyPair keyPair = KeyGeneratorUtils.generateRsaKey();
 		RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
 		RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
-		// @formatter:off
-		return new RSAKey.Builder(publicKey)
-				.privateKey(privateKey)
-				.keyID(UUID.randomUUID().toString())
-				.build();
-		// @formatter:on
+		return new RSAKey.Builder(publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
 	}
 
 	public static ECKey generateEc() {
@@ -54,21 +49,12 @@ public final class Jwks {
 		ECPublicKey publicKey = (ECPublicKey) keyPair.getPublic();
 		ECPrivateKey privateKey = (ECPrivateKey) keyPair.getPrivate();
 		Curve curve = Curve.forECParameterSpec(publicKey.getParams());
-		// @formatter:off
-		return new ECKey.Builder(curve, publicKey)
-				.privateKey(privateKey)
-				.keyID(UUID.randomUUID().toString())
-				.build();
-		// @formatter:on
+		return new ECKey.Builder(curve, publicKey).privateKey(privateKey).keyID(UUID.randomUUID().toString()).build();
 	}
 
 	public static OctetSequenceKey generateSecret() {
 		SecretKey secretKey = KeyGeneratorUtils.generateSecretKey();
-		// @formatter:off
-		return new OctetSequenceKey.Builder(secretKey)
-				.keyID(UUID.randomUUID().toString())
-				.build();
-		// @formatter:on
+		return new OctetSequenceKey.Builder(secretKey).keyID(UUID.randomUUID().toString()).build();
 	}
 
 }
