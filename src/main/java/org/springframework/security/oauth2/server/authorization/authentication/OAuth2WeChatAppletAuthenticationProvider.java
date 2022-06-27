@@ -132,6 +132,10 @@ public class OAuth2WeChatAppletAuthenticationProvider implements AuthenticationP
 		}
 
 		String openid = code2SessionResponse.getOpenid();
+		if (openid == null) {
+			throw new RuntimeException("未获取到openid");
+		}
+
 		String unionid = code2SessionResponse.getUnionid();
 		String sessionKey = code2SessionResponse.getSessionKey();
 
