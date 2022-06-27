@@ -10,8 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class WechatAppletAuthorizationserverApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(WechatAppletAuthorizationserverApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(WechatAppletAuthorizationserverApplication.class, args);
+	}
 
 }
