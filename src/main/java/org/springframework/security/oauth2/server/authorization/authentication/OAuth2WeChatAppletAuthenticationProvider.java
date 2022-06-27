@@ -154,16 +154,11 @@ public class OAuth2WeChatAppletAuthenticationProvider implements AuthenticationP
 
 		OAuth2Authorization authorization = builder.build();
 
-		// @formatter:off
 		DefaultOAuth2TokenContext.Builder tokenContextBuilder = DefaultOAuth2TokenContext.builder()
-				.registeredClient(registeredClient)
-				.principal(authorization.getAttribute(Principal.class.getName()))
-				.providerContext(ProviderContextHolder.getProviderContext())
-				.authorization(authorization)
+				.registeredClient(registeredClient).principal(authorization.getAttribute(Principal.class.getName()))
+				.providerContext(ProviderContextHolder.getProviderContext()).authorization(authorization)
 				.authorizedScopes(authorization.getAttribute(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME))
-				.authorizationGrantType(WECHAT_APPLET)
-				.authorizationGrant(oauth2WeChatAppletAuthenticationToken);
-		// @formatter:on
+				.authorizationGrantType(WECHAT_APPLET).authorizationGrant(oauth2WeChatAppletAuthenticationToken);
 
 		OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.from(authorization);
 

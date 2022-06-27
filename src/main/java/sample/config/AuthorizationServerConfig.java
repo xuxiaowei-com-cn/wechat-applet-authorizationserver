@@ -104,12 +104,12 @@ public class AuthorizationServerConfig {
 	@Order(Ordered.HIGHEST_PRECEDENCE)
 	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
-		// @formatter:off
-        OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<>();
-        RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
+		OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<>();
+		RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
 
-        http.requestMatcher(endpointsMatcher).authorizeRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated()).csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher)).apply(authorizationServerConfigurer);
-        // @formatter:on
+		http.requestMatcher(endpointsMatcher)
+				.authorizeRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
+				.csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher)).apply(authorizationServerConfigurer);
 
 		// 自定义客户授权
 		authorizationServerConfigurer.tokenEndpoint(tokenEndpointCustomizer -> tokenEndpointCustomizer
@@ -125,24 +125,27 @@ public class AuthorizationServerConfig {
 
 		OAuth2WeChatAuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-		// @formatter:off
-        http.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")));
-        // @formatter:on
+		http.exceptionHandling(
+				exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")));
 		return http.build();
 	}
 
-	// @formatter:off
-    @Bean
-    public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
-        RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString()).clientId("client").clientSecret("{noop}secret").clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC).clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST).authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN).authorizationGrantType(new AuthorizationGrantType("wechat_applet")).scope(OidcScopes.OPENID).scope("message.read").scope("message.write").clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build()).build();
+	@Bean
+	public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
+		RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString()).clientId("client")
+				.clientSecret("{noop}secret").clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+				.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+				.authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+				.authorizationGrantType(new AuthorizationGrantType("wechat_applet")).scope(OidcScopes.OPENID)
+				.scope("message.read").scope("message.write")
+				.clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build()).build();
 
-        // Save registered client in db as if in-memory
-        JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
-        registeredClientRepository.save(registeredClient);
+		// Save registered client in db as if in-memory
+		JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
+		registeredClientRepository.save(registeredClient);
 
-        return registeredClientRepository;
-    }
-    // @formatter:on
+		return registeredClientRepository;
+	}
 
 	@Bean
 	public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
@@ -170,9 +173,14 @@ public class AuthorizationServerConfig {
 
 	@Bean
 	public EmbeddedDatabase embeddedDatabase() {
-		// @formatter:off
-        return new EmbeddedDatabaseBuilder().generateUniqueName(true).setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8").addScript("org/springframework/security/oauth2/server/authorization/oauth2-authorization-schema.sql").addScript("org/springframework/security/oauth2/server/authorization/oauth2-authorization-consent-schema.sql").addScript("org/springframework/security/oauth2/server/authorization/client/oauth2-registered-client-schema.sql").build();
-        // @formatter:on
+		return new EmbeddedDatabaseBuilder().generateUniqueName(true).setType(EmbeddedDatabaseType.H2)
+				.setScriptEncoding("UTF-8")
+				.addScript("org/springframework/security/oauth2/server/authorization/oauth2-authorization-schema.sql")
+				.addScript(
+						"org/springframework/security/oauth2/server/authorization/oauth2-authorization-consent-schema.sql")
+				.addScript(
+						"org/springframework/security/oauth2/server/authorization/client/oauth2-registered-client-schema.sql")
+				.build();
 	}
 
 }
