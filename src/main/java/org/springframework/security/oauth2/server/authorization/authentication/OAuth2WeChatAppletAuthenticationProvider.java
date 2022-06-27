@@ -293,14 +293,11 @@ public class OAuth2WeChatAppletAuthenticationProvider implements AuthenticationP
 
 		@Override
 		public String toString() {
-			return "Code2SessionResponse{" +
-					"openid='" + openid + '\'' +
-					", sessionKey='" + sessionKey + '\'' +
-					", unionid='" + unionid + '\'' +
-					", errcode='" + errcode + '\'' +
-					", errmsg='" + errmsg + '\'' +
-					'}';
+			return "Code2SessionResponse{" + "openid='" + openid + '\'' + ", sessionKey='" + sessionKey + '\''
+					+ ", unionid='" + unionid + '\'' + ", errcode='" + errcode + '\'' + ", errmsg='" + errmsg + '\''
+					+ '}';
 		}
+
 	}
 
 }

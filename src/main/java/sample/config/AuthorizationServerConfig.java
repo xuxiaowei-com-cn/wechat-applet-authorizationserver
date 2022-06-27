@@ -66,71 +66,72 @@ import java.util.UUID;
 @Configuration(proxyBeanMethods = false)
 public class AuthorizationServerConfig {
 
-    /**
-     * 微信小程序服务类
-     */
-    @Bean
-    public WeChatAppletService weChatAppletService() {
-        InMemoryWeChatAppletService weChatAppletService = new InMemoryWeChatAppletService();
-                    String appid = "微信小程序ID，如：wxcf4f3a217a******";
-                    String secret = "微信小程序秘钥";
-        weChatAppletService.setWeChatAppletList(Collections.singletonList(new InMemoryWeChatAppletService.WeChatApplet(appid, secret)));
-        return weChatAppletService;
-    }
+	/**
+	 * 微信小程序服务类
+	 */
+	@Bean
+	public WeChatAppletService weChatAppletService() {
+		InMemoryWeChatAppletService weChatAppletService = new InMemoryWeChatAppletService();
+		String appid = "微信小程序ID，如：wxcf4f3a217a******";
+		String secret = "微信小程序秘钥";
+		weChatAppletService.setWeChatAppletList(
+				Collections.singletonList(new InMemoryWeChatAppletService.WeChatApplet(appid, secret)));
+		return weChatAppletService;
+	}
 
+	/**
+	 * @see <a href=
+	 * "https://docs.spring.io/spring-authorization-server/docs/current/reference/html/protocol-endpoints.html">协议端点的</a>
+	 * Spring Security 过滤器链。
+	 * @see OAuth2AuthorizationServerConfiguration#applyDefaultSecurity(HttpSecurity) 默认
+	 * OAuth 2.1 授权配置
+	 * @see OAuth2AuthorizationEndpointFilter 默认 OAuth 2.1 授权页面
+	 * @see OAuth2TokenEndpointFilter#setAuthenticationConverter(AuthenticationConverter)
+	 * @see OAuth2TokenEndpointConfigurer#accessTokenRequestConverter(AuthenticationConverter)
+	 * @see AnonymousAuthenticationProvider
+	 * @see JwtClientAssertionAuthenticationProvider
+	 * @see ClientSecretAuthenticationProvider
+	 * @see PublicClientAuthenticationProvider
+	 * @see OAuth2AuthorizationCodeRequestAuthenticationProvider
+	 * @see OAuth2AuthorizationCodeAuthenticationProvider
+	 * @see OAuth2RefreshTokenAuthenticationProvider
+	 * @see OAuth2ClientCredentialsAuthenticationProvider
+	 * @see OAuth2TokenIntrospectionAuthenticationProvider
+	 * @see OAuth2TokenRevocationAuthenticationProvider
+	 * @see OidcUserInfoAuthenticationProvider
+	 */
+	@Bean
+	@Order(Ordered.HIGHEST_PRECEDENCE)
+	public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
-    /**
-     * @see <a href=
-     * "https://docs.spring.io/spring-authorization-server/docs/current/reference/html/protocol-endpoints.html">协议端点的</a>
-     * Spring Security 过滤器链。
-     * @see OAuth2AuthorizationServerConfiguration#applyDefaultSecurity(HttpSecurity) 默认
-     * OAuth 2.1 授权配置
-     * @see OAuth2AuthorizationEndpointFilter 默认 OAuth 2.1 授权页面
-     * @see OAuth2TokenEndpointFilter#setAuthenticationConverter(AuthenticationConverter)
-     * @see OAuth2TokenEndpointConfigurer#accessTokenRequestConverter(AuthenticationConverter)
-     * @see AnonymousAuthenticationProvider
-     * @see JwtClientAssertionAuthenticationProvider
-     * @see ClientSecretAuthenticationProvider
-     * @see PublicClientAuthenticationProvider
-     * @see OAuth2AuthorizationCodeRequestAuthenticationProvider
-     * @see OAuth2AuthorizationCodeAuthenticationProvider
-     * @see OAuth2RefreshTokenAuthenticationProvider
-     * @see OAuth2ClientCredentialsAuthenticationProvider
-     * @see OAuth2TokenIntrospectionAuthenticationProvider
-     * @see OAuth2TokenRevocationAuthenticationProvider
-     * @see OidcUserInfoAuthenticationProvider
-     */
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-
-        // @formatter:off
+		// @formatter:off
         OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<>();
         RequestMatcher endpointsMatcher = authorizationServerConfigurer.getEndpointsMatcher();
 
         http.requestMatcher(endpointsMatcher).authorizeRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated()).csrf(csrf -> csrf.ignoringRequestMatchers(endpointsMatcher)).apply(authorizationServerConfigurer);
         // @formatter:on
 
-        // 自定义客户授权
-        authorizationServerConfigurer.tokenEndpoint(tokenEndpointCustomizer -> tokenEndpointCustomizer.accessTokenRequestConverter(new DelegatingAuthenticationConverter(Arrays.asList(
-                // 新增：微信 OAuth2 用于验证授权授予的 {@link OAuth2WeChatAuthenticationToken}
-                new OAuth2WeChatAppletAuthenticationConverter(),
-                // 默认值：OAuth2 授权码认证转换器
-                new OAuth2AuthorizationCodeAuthenticationConverter(),
-                // 默认值：OAuth2 刷新令牌认证转换器
-                new OAuth2RefreshTokenAuthenticationConverter(),
-                // 默认值：OAuth2 客户端凭据身份验证转换器
-                new OAuth2ClientCredentialsAuthenticationConverter()))));
+		// 自定义客户授权
+		authorizationServerConfigurer.tokenEndpoint(tokenEndpointCustomizer -> tokenEndpointCustomizer
+				.accessTokenRequestConverter(new DelegatingAuthenticationConverter(Arrays.asList(
+						// 新增：微信 OAuth2 用于验证授权授予的 {@link OAuth2WeChatAuthenticationToken}
+						new OAuth2WeChatAppletAuthenticationConverter(),
+						// 默认值：OAuth2 授权码认证转换器
+						new OAuth2AuthorizationCodeAuthenticationConverter(),
+						// 默认值：OAuth2 刷新令牌认证转换器
+						new OAuth2RefreshTokenAuthenticationConverter(),
+						// 默认值：OAuth2 客户端凭据身份验证转换器
+						new OAuth2ClientCredentialsAuthenticationConverter()))));
 
-        OAuth2WeChatAuthorizationServerConfiguration.applyDefaultSecurity(http);
+		OAuth2WeChatAuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-        // @formatter:off
+		// @formatter:off
         http.exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")));
         // @formatter:on
-        return http.build();
-    }
+		return http.build();
+	}
 
-    // @formatter:off
+	// @formatter:off
     @Bean
     public RegisteredClientRepository registeredClientRepository(JdbcTemplate jdbcTemplate) {
         RegisteredClient registeredClient = RegisteredClient.withId(UUID.randomUUID().toString()).clientId("client").clientSecret("{noop}secret").clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC).clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST).authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN).authorizationGrantType(new AuthorizationGrantType("wechat_applet")).scope(OidcScopes.OPENID).scope("message.read").scope("message.write").clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build()).build();
@@ -143,33 +144,35 @@ public class AuthorizationServerConfig {
     }
     // @formatter:on
 
-    @Bean
-    public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate, RegisteredClientRepository registeredClientRepository) {
-        return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
-    }
+	@Bean
+	public OAuth2AuthorizationService authorizationService(JdbcTemplate jdbcTemplate,
+			RegisteredClientRepository registeredClientRepository) {
+		return new JdbcOAuth2AuthorizationService(jdbcTemplate, registeredClientRepository);
+	}
 
-    @Bean
-    public OAuth2AuthorizationConsentService authorizationConsentService(JdbcTemplate jdbcTemplate, RegisteredClientRepository registeredClientRepository) {
-        return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
-    }
+	@Bean
+	public OAuth2AuthorizationConsentService authorizationConsentService(JdbcTemplate jdbcTemplate,
+			RegisteredClientRepository registeredClientRepository) {
+		return new JdbcOAuth2AuthorizationConsentService(jdbcTemplate, registeredClientRepository);
+	}
 
-    @Bean
-    public JWKSource<SecurityContext> jwkSource() {
-        RSAKey rsaKey = Jwks.generateRsa();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
-    }
+	@Bean
+	public JWKSource<SecurityContext> jwkSource() {
+		RSAKey rsaKey = Jwks.generateRsa();
+		JWKSet jwkSet = new JWKSet(rsaKey);
+		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+	}
 
-    @Bean
-    public ProviderSettings providerSettings() {
-        return ProviderSettings.builder().issuer("http://localhost:9080").build();
-    }
+	@Bean
+	public ProviderSettings providerSettings() {
+		return ProviderSettings.builder().issuer("http://localhost:9080").build();
+	}
 
-    @Bean
-    public EmbeddedDatabase embeddedDatabase() {
-        // @formatter:off
+	@Bean
+	public EmbeddedDatabase embeddedDatabase() {
+		// @formatter:off
         return new EmbeddedDatabaseBuilder().generateUniqueName(true).setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8").addScript("org/springframework/security/oauth2/server/authorization/oauth2-authorization-schema.sql").addScript("org/springframework/security/oauth2/server/authorization/oauth2-authorization-consent-schema.sql").addScript("org/springframework/security/oauth2/server/authorization/client/oauth2-registered-client-schema.sql").build();
         // @formatter:on
-    }
+	}
 
 }
